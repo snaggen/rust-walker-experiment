@@ -5,16 +5,15 @@ use std::pin::Pin;
 use std::future::Future;
 use async_std::fs::read_dir;
 use async_std::task;
-use async_std::path::PathBuf;
 use futures::StreamExt;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     if let Some(folder) = args.get(1) {
         //warmup
-        task::block_on(walk(&PathBuf::from(folder)));
+        task::block_on(walk(folder.to_string()));
         let start = Instant::now();
-        task::block_on(walk(&PathBuf::from(folder)));
+        task::block_on(walk(folder.to_string()));
         let total = start.elapsed();
         println!("Time {:#?}", total);
     } else {
@@ -23,21 +22,24 @@ fn main() {
     }
 }
 
-fn walk<'a>(path: &'a PathBuf) -> Pin<Box<dyn Future<Output = ()> + 'a>> {
+fn walk<'a>(path: String) -> Pin<Box<dyn Future<Output = ()> + 'a + Send>> {
     return Box::pin(async move {
         for mut dir in read_dir(path).await {
+            let mut handles = vec!();
             while let Some(Ok(entry)) = dir.next().await {
                 if entry.file_name().to_str().unwrap().starts_with(".") {
                     continue;
                 }
                 let path = entry.path();
+                let path_string = path.to_str().unwrap().to_string();
                 if path.is_dir().await {
-                    walk(&path).await;
+                    handles.push(async_std::task::spawn(walk(path_string)));
                 }
                 if path.is_file().await {
                     //TODO: Do actual work
                 }
             }
+            futures::future::join_all(handles).await;
         }
     });
 }
