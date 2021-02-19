@@ -1,8 +1,8 @@
 use std::env;
+use std::future::Future;
+use std::pin::Pin;
 use std::process::exit;
 use std::time::Instant;
-use std::pin::Pin;
-use std::future::Future;
 use tokio::fs::read_dir;
 use tokio::runtime::Runtime;
 
@@ -25,7 +25,7 @@ fn main() {
 fn walk<'a>(path: String) -> Pin<Box<dyn Future<Output = ()> + 'a + Send>> {
     return Box::pin(async move {
         for mut dir in read_dir(path).await {
-            let mut handles = vec!();
+            let mut handles = vec![];
             while let Ok(Some(entry)) = dir.next_entry().await {
                 if entry.file_name().to_str().unwrap().starts_with(".") {
                     continue;

@@ -1,7 +1,7 @@
 use std::env;
-use std::process::exit;
-use std::path::Path;
 use std::fs::read_dir;
+use std::path::Path;
+use std::process::exit;
 use std::time::Instant;
 
 fn main() {
@@ -30,7 +30,7 @@ fn walk(path: &Path) {
                 walk(&path);
             }
             if path.is_file() {
-               //TODO: Do actual work
+                //TODO: Do actual work
             }
         }
     }

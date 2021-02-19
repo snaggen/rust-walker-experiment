@@ -1,11 +1,10 @@
+use async_std::fs::read_dir;
+use async_std::prelude::{Future, StreamExt};
+use async_std::task;
 use std::env;
+use std::pin::Pin;
 use std::process::exit;
 use std::time::Instant;
-use std::pin::Pin;
-use std::future::Future;
-use async_std::fs::read_dir;
-use async_std::task;
-use futures::StreamExt;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -25,7 +24,7 @@ fn main() {
 fn walk<'a>(path: String) -> Pin<Box<dyn Future<Output = ()> + 'a + Send>> {
     return Box::pin(async move {
         for mut dir in read_dir(path).await {
-            let mut handles = vec!();
+            let mut handles = vec![];
             while let Some(Ok(entry)) = dir.next().await {
                 if entry.file_name().to_str().unwrap().starts_with(".") {
                     continue;
@@ -41,4 +40,3 @@ fn walk<'a>(path: String) -> Pin<Box<dyn Future<Output = ()> + 'a + Send>> {
         }
     });
 }
-
