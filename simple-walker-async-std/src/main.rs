@@ -30,12 +30,10 @@ fn walk<'a>(path: String) -> Pin<Box<dyn Future<Output = ()> + 'a + Send>> {
                 if entry.file_name().to_str().unwrap().starts_with(".") {
                     continue;
                 }
-                let path = entry.path();
-                let path_string = path.to_str().unwrap().to_string();
-                if path.is_dir().await {
+                if entry.file_type().await.unwrap().is_dir() {
+                    let path_string = entry.path().to_str().unwrap().to_string();
                     handles.push(async_std::task::spawn(walk(path_string)));
-                }
-                if path.is_file().await {
+                } else {
                     //TODO: Do actual work
                 }
             }
